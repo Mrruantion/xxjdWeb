@@ -59,7 +59,7 @@ function _readyFun() {
   $('#jnum').empty().append(setOption());
   $('#cnum').empty().append(setOption());
   var customArr = [];
-  var fixPropArr = ['id', 'fid', 'u_path', 'did', 'name', 'saveExpireIn', 'createdAt', 'num', 'page', "qnum", "lnum", "jnum", "cnum", "ce", "bnum", "pname", "lname"];
+  var fixPropArr = ['id', 'fid', 'u_path', 'did', 'name', 'saveExpireIn', 'createdAt', 'num', 'page', "qnum", "lnum", "jnum", "cnum", "ce", "bnum", "pname", "lname","tree_path"];
   $('#divDocPro').dialog({
     width: 400,
     maxHeight: 400,
@@ -1802,12 +1802,22 @@ function _readyFun() {
                   callback({ status: -1 })
                 }
               } else {
-                var cres = {
-                  id: contentfileId,
-                  tree_path: tree_path,
-                  last_name: filename
-                };
-                callback(cres);
+                var docFileArr = docDatas.filter(function (ele) { return ele.did == filenameArr[0].split('.')[0] })
+                if (docFileArr.length) {
+                  var cres = {
+                    id: docFileArr[0].id,
+                    tree_path: docFileArr[0].tree_path,
+                    last_name: filename 
+                  };
+                  callback(cres);
+                }else {
+                  var cres = {
+                    id: contentfileId,
+                    tree_path: tree_path,
+                    last_name: filename
+                  };
+                  callback(cres);
+                } 
               }
 
 

@@ -14,6 +14,27 @@ var title = '';
 var _titleName = '';
 $(document).ready(function () {
 
+
+    // 初始化日期框
+    $('#expireDate').datetimepicker({
+        format: 'yyyy-mm-dd hh:ii:ss',
+        language: 'zh-CN',
+        weekStart: 1,
+        todayBtn: 1,
+        autoclose: 1,
+        todayHighlight: 1,
+        startView: 2,
+        forceParse: 0,
+        minView: 2,
+        showMeridian: 1
+    });
+    // $('#expireDate').val(new Date().format('yyyy-MM-dd hh:mm:ss'))
+    if($.cookie('account') != 'xxjd'){
+        $('#expireDate').parent().hide()
+    }else {
+        $('#expireDate').parent().show()
+    }
+
     $(window).resize(function () {
         windowResize();
     });
@@ -344,7 +365,8 @@ $(document).ready(function () {
                 var userType = res.data.userType;
                 var createdAt = new Date(res.data.createdAt).format('yyyy-MM-dd hh:mm:ss');
                 var titleName = res.data.titleName
-                initfrmUser(1, account, userType, name, createdAt, titleName);
+                var useTime = res.data.useTime
+                initfrmUser(1, account, userType, name, createdAt, titleName,useTime);
             })
             // $()
             $('#divaddUser').dialog("option", 'title', '修改用户');
@@ -628,7 +650,7 @@ $(document).ready(function () {
 
 
 // type 1修改 2增加
-var initfrmUser = function (type, account, userType, name, createdAt, titleName) {
+var initfrmUser = function (type, account, userType, name, createdAt, titleName,useTime) {
     validator_customer.resetForm();
     editoradd = type;
     edit_username = name;
@@ -645,6 +667,7 @@ var initfrmUser = function (type, account, userType, name, createdAt, titleName)
         $('#repassword').show();
         $('#createdAt').parent().show()
         $('#createdAt').attr('disabled', 'disabled')
+        
 
     } else {
         if (aduserType == 2) {//账号
@@ -667,6 +690,7 @@ var initfrmUser = function (type, account, userType, name, createdAt, titleName)
     $('#username').val(name);
     $('#createdAt').val(createdAt)
     $('#sTitleName').val(titleName)
+    $('#expireDate').val(new Date(useTime).format('yyyy-MM-dd hh:mm:ss'))
 
 }
 
@@ -734,10 +758,12 @@ function editUser(id) {
     var userType = $('#userType').val();
     var name = $('#username').val();
     var titleName = $('#sTitleName').val()
+    var useTime =  $('#expireDate').val()
     var obj = {
         name: name,
         userType: userType,
-        titleName: titleName
+        titleName: titleName,
+        useTime:useTime
     }
     if ($('#password').val() != '*********') {
         obj['password'] = $('#password').val()

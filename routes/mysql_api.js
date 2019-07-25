@@ -159,8 +159,7 @@ function _vagueList(req, res, table) {
     })
 }
 
-
-function _list(req, res, table) {
+function _list(req, res, table,callback) {
     var query = req.query;
     var sorts, limit, fields, page_no, query_json = {};
 
@@ -189,9 +188,19 @@ function _list(req, res, table) {
         if (ele) {
             if (ele.indexOf('-') > -1) {
                 var s = ele.slice(ele.indexOf('-') + 1)
-                sortstr += s + ' desc,'
+
+                if (table == 'document' && s == 'name') {
+                    sortstr += 'convert(document.name using gbk) collate gbk_chinese_ci desc,'
+                } else {
+                    sortstr += s + ' desc,'
+                }
             } else {
-                sortstr += ele + ' asc,'
+                if (table == 'document' && ele == 'name') {
+                    sortstr += 'convert(document.name using gbk) collate gbk_chinese_ci asc,'
+                } else {
+                    sortstr += ele + ' asc,'
+                }
+
             }
         }
     })
@@ -221,15 +230,95 @@ function _list(req, res, table) {
                         result.status = err.errno;
                     }
                 }
-                res.json(result)
+                if(callback){
+                    callback(result)
+                }else {
+                    res.json(result)
+                }
+               
             })
             // result.sql = querySql
         } catch (error) {
             result.status = err.errno;
-            res.json(result)
+            if(callback){
+                callback(result)
+            }else {
+                res.json(result)
+            }
+            
         }
     })
 }
+// function _list(req, res, table) {
+//     var query = req.query;
+//     var sorts, limit, fields, page_no, query_json = {};
+
+//     var db = req.con;
+//     for (var i in query) {
+//         switch (i) {
+//             case 'sorts': sorts = query[i].trim()
+//                 break;
+//             case 'limit': limit = query[i]
+//                 break;
+//             case 'fields': fields = query[i].trim() || '*'
+//                 break;
+//             case 'page_no': page_no = query[i];
+//                 break;
+//             case 'access_token':
+//             case 'method':
+//                 break;
+//             default:
+//                 query_json[i] = query[i];
+//                 break;
+//         }
+//     }
+//     var sorts = sorts ? sorts.split('|') : [];
+//     var sortstr = '';
+//     sorts.forEach(ele => {
+//         if (ele) {
+//             if (ele.indexOf('-') > -1) {
+//                 var s = ele.slice(ele.indexOf('-') + 1)
+//                 sortstr += s + ' desc,'
+//             } else {
+//                 sortstr += ele + ' asc,'
+//             }
+//         }
+//     })
+//     sortstr = sortstr.slice(0, sortstr.length - 1)
+
+//     // var sql = 'select * from ' + table + ' where ' + condition;
+//     var countsql = `select count(*) from ${table} ${wUrl(query_json)}`
+//     console.log(countsql)
+//     db.query(countsql, function (err, row) {
+//         var result = {};
+//         if (err) {
+//             result.message = err.message;
+//         }
+//         try {
+//             result.total = row[0]['count(*)'];
+//             var querySql = `select ${fields} from ${table} ${wUrl(query_json)} ${sortstr ? `order by ${sortstr}` : ''} ${limit > 0 ? `limit ${(page_no - 1) * limit},${limit}` : ''}`
+//             // result.sql = querySql
+//             db.query(querySql, function (err, rows) {
+//                 if (err) {
+//                     result.message = err.message;
+//                     result.status = err.errno;
+//                 } else {
+//                     try {
+//                         result.status = 0;
+//                         result.data = rows;
+//                     } catch (errors) {
+//                         result.status = err.errno;
+//                     }
+//                 }
+//                 res.json(result)
+//             })
+//             // result.sql = querySql
+//         } catch (error) {
+//             result.status = err.errno;
+//             res.json(result)
+//         }
+//     })
+// }
 
 
 //两表左联查询

@@ -14,23 +14,23 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var mysql = require('mysql');
 var app = express();
-app.use(session({ secret: 'wilson' , resave: true, saveUninitialized: true}));
+app.use(session({ secret: 'wilson' , resave: true, saveUninitialized: true,cookie:{maxAge:655200 * 1000}}));
 // var mysql = require("mysql");
+var pool = mysql.createPool({
+  host: "localhost",
+  port: '3306',
+  user: "root",
+  password: "doccloud2018",
+  database: "docdb2"
+});
+
 // var pool = mysql.createPool({
-//   host: "localhost",
-//   port: '3306',
-//   user: "root",
+//   host: "582c1a40635ca.sh.cdb.myqcloud.com",
+//   port: '5079',
+//   user: "docdb",
 //   password: "doccloud2018",
 //   database: "docdb"
 // });
-
-var pool = mysql.createPool({
-  host: "582c1a40635ca.sh.cdb.myqcloud.com",
-  port: '5079',
-  user: "docdb",
-  password: "doccloud2018",
-  database: "docdb"
-});
 var query=function(sql,callback,options){  
   pool.getConnection(function(err,conn){  
       if(err){  

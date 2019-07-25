@@ -11,12 +11,12 @@ $(document).ready(function () {
         var account = $('#account').val();
         var password = $('#password').val();
         // if($('#isjz'))
-        if($('#isjz').is(':checked')){
-            localStorage.setItem("account",account)
-            localStorage.setItem("password",password)
-        }else {
-            localStorage.setItem("account",'')
-            localStorage.setItem("password",'')
+        if ($('#isjz').is(':checked')) {
+            localStorage.setItem("account", account)
+            localStorage.setItem("password", password)
+        } else {
+            localStorage.setItem("account", '')
+            localStorage.setItem("password", '')
         }
         if (account == '') {
             return;
@@ -35,19 +35,51 @@ $(document).ready(function () {
                 $.cookie('pId', res.data.user.pid);
                 $.cookie('tree_path', res.data.user.tree_path);
                 $.cookie('role', res.data.user.role)
-                $.cookie("userType",res.data.user.userType)
+                $.cookie("userType", res.data.user.userType)
+                $.cookie("useTime", new Date(res.data.user.useTime).format('yyyy-MM-dd hh:mm:ss'))
 
-                local_api._get("document",{u_path:res.data.user.tree_path},"",res.data.app_key,function(docr){
-                    console.log(docr,"docr")
+                local_api._get("document", { u_path: res.data.user.tree_path }, "", res.data.app_key, function (docr) {
+                    console.log(docr, "docr")
                     $.cookie('docId', docr.data.id);
                     // debugger
-                    var page = { '首页': '/summary', '目录': '/file', '检索': '/hightSearch', '用户管理': '/user' }
-                    var roleArr = res.data.user.role ? res.data.user.role.split(',') : [];
-                    var href = page[roleArr[0]] || '/logout';
-                    location.href = href
+
+                    local_api._list("syslog", { operate: "登录成功", account: $.cookie('account') }, "", "-createdAt", 1, 1, res.data.app_key, function (syslog) {
+                        var newDate = new Date().format('yyyy-MM-dd hh:mm:ss')
+                        if (syslog.total == 0) {
+                            if ($.cookie("useTime") < newDate) {
+                                alert('有效期已过，请联系管理人员续期')
+                                location.href = '/logout'
+                                return
+                            }
+                        } else if (syslog.total > 0) {
+                            var newDate2 = new Date(syslog.data[0].createdAt).format('yyyy-MM-dd hh:mm:ss')
+                            if (newDate2 > newDate) {
+                                alert('有效期已过，请联系管理人员续期')
+                                location.href = '/logout'
+                                return
+                            }
+                            if ($.cookie("useTime") < newDate) {
+                                alert('有效期已过，请联系管理人员续期')
+                                location.href = '/logout'
+                                return
+                            }
+                        }
+                        var page = { '首页': '/summary', '目录': '/file', '检索': '/hightSearch', '用户管理': '/user' }
+                        var roleArr = res.data.user.role ? res.data.user.role.split(',') : [];
+                        if (page[roleArr[0]]) {
+                            createOperate('登录成功')
+                        }else {
+                            alert('该账号无权限')
+                        }
+                        var href = page[roleArr[0]] || '/logout';
+                        location.href = href
+                        // console.log(syslog)
+
+                    })
+
 
                 })
-               
+
                 // if( res.data.user.id == 5){
                 //     location.href = '/hightSearch'
                 // }else {
@@ -80,5 +112,17 @@ $(document).ready(function () {
             return false;// 取消默认的提交行为  
         }
     });
+
+    function createOperate(operate) {
+        var create_json = {
+            uid: $.cookie('accountId'),
+            account: $.cookie('account'),
+            name: $.cookie('name'),
+            operate: operate,
+            createdAt: new Date().format('yyyy-MM-dd hh:mm:ss'),
+            u_path: $.cookie('tree_path')
+        }
+        local_api._create('syslog', create_json, $.cookie('appkey'), function (res) { console.log(res) })
+    }
 
 })

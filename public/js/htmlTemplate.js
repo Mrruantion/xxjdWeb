@@ -4,6 +4,8 @@
 function fileConstruct(fileData) {
     var fileTypeClass = 'folder', fileClass, isImg = false;
     var fileType = ['jpg', 'jpeg', 'gif', 'png', 'bmp'];
+    var autoId = fileData.did
+    console.log(autoId)
     var _path = '';
     if (fileData.type == 3) {
         fileTypeClass = fileData.filetype;
@@ -49,6 +51,7 @@ function fileConstruct(fileData) {
         }
                                         
                     </div>
+                    ${autoId?`<div style="float: left;padding: 5px;"><span style="padding-top: 17px;display: block;">${autoId}</span></div>`:''}
                     <div class="file-title-box">
                     ${
         isImg ?
